@@ -3,26 +3,30 @@
 import os
 import sys
 from stat import *
+import codecs
 
 def dir_recursion( start, process, fix_order ):
     dirlist = os.listdir(start)
     for entry in dirlist:
         pathname = os.path.join(start, entry)
         mode = os.stat(pathname).st_mode
-        if S_ISREG(mode):
+        if (S_ISREG(mode) and (pathname.endswith(".h") or pathname.endswith(".hpp") or pathname.endswith(".c") or pathname.endswith(".cpp"))):
             process(pathname, fix_order)
         elif S_ISDIR(mode):
-            dir_recursion(pathname, process)
+            dir_recursion(pathname, process, fix_order)
 
 def checkorderincludes( filename, fix_order ):
     linelistlib = []
     linelist = []
+    qlinelist = []
     allines = []
     sourcefile = open(filename, "r+")
     for line in sourcefile:
-        if (line.startswith("#include <")):
+        if (line.startswith("#include <Q")):
+                qlinelist.append(line)
+        elif (line.startswith("#include <")):
             linelistlib.append(line)
-        if (line.startswith("#include \"")):
+        elif (line.startswith("#include \"")):
             linelist.append(line)
         allines.append(line)
     sourcefile.close()
